@@ -285,30 +285,30 @@ public class Tile : MonoBehaviour
     {
 
         // If there is no top tile we make sure to clear former row neighbours.
-        if (this.top == null)
+        if (top == null)
         {
 
-            if (this.left != null)
+            if (left != null)
             {
-                this.left.right = null;
+                left.right = null;
             }
-            if (this.right != null)
+            if (right != null)
             {
-                this.right.left = null;
+                right.left = null;
             }
         }
 
         // Assign new neighbours from the former tile.
-        this.left = formerTile.left;
-        this.right = formerTile.right;
+        left = formerTile.left;
+        right = formerTile.right;
 
-        if (this.left != null)
+        if (left != null)
         {
-            this.left.right = formerTile.top;
+            left.right = formerTile.top;
         }
-        if (this.right != null)
+        if (right != null)
         {
-            this.right.left = formerTile.top;
+            right.left = formerTile.top;
         }
     }
 
@@ -329,7 +329,7 @@ public class Tile : MonoBehaviour
                 matching = true;
             }
         }
-        if (right != null && this.right.type == type)
+        if (right != null && right.type == type)
         {// <X>|x|
             if (right.right != null && right.right.type == type)
             { //<X>|x|x|
