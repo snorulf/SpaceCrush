@@ -1,0 +1,1 @@
+Open as Unity project with Android as target platform. Open scene SpaceCrusch.unity and play.
