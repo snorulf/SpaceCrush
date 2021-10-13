@@ -23,6 +23,7 @@ sysinfo.txt
 # ===================================== #
 [Ee]xported[Oo]bj/
 **/*.sln*
+**/*.vsconfig
 
 # ============ #
 # OS generated #
