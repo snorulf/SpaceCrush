@@ -230,18 +230,6 @@ public class Tile : MonoBehaviour
         }
     }
 
-    private IEnumerator PingPongEmissive(float duration, float targetValue)
-    {
-        float time = 0;
-
-        while (time < duration)
-        {
-            EmissionIntensity = Mathf.PingPong(time, targetValue);
-            time += Time.deltaTime;
-            yield return null;
-        }
-    }
-
     public void Explode(Transform transform)
     {
         Rigidbody.isKinematic = false;
