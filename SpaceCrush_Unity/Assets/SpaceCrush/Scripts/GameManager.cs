@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (playing && Idle() && !handlingturn)
+        if (IdleTimeOut())
         {
             grid.ResetTiles();
             playing = false;
@@ -103,6 +103,11 @@ public class GameManager : MonoBehaviour
     private bool PlayersTurn()
     {
         return !handlingturn;
+    }
+
+    private bool IdleTimeOut()
+    {
+        return playing && Idle() && !handlingturn;
     }
 
     private void PopTileAtPosition(Vector3 pos)
