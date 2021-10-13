@@ -4,9 +4,11 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 [SelectionBase]
-public class Tile : MonoBehaviour {
+public class Tile : MonoBehaviour
+{
 
-    public enum TileType {
+    public enum TileType
+    {
         Cube,
         Sphere,
         Cylinder,
@@ -15,7 +17,8 @@ public class Tile : MonoBehaviour {
     }
 
     private bool matching = false;
-    public bool Matching {
+    public bool Matching
+    {
         get => matching;
     }
 
@@ -50,23 +53,30 @@ public class Tile : MonoBehaviour {
     public Vector3 positionOffset = Vector3.zero;
 
     public float moveDuration = 0.0f;
-    public TileType Type { 
+    public TileType Type
+    {
         get => type;
-        set {
+        set
+        {
             type = value;
-            if (tileGO == null) {
+            if (tileGO == null)
+            {
                 InstantiateTilePrefab();
             }
-            else {
+            else
+            {
                 // FIXME: Change type of instantiated tile.
                 throw new System.NotImplementedException();
             }
         }
     }
 
-    private Material Material {
-        get {
-            if (material == null) {
+    private Material Material
+    {
+        get
+        {
+            if (material == null)
+            {
                 material = GetComponentInChildren<MeshRenderer>().material;
                 UnityEngine.Assertions.Assert.IsNotNull(material);
             }
@@ -74,9 +84,12 @@ public class Tile : MonoBehaviour {
         }
     }
 
-    private MeshRenderer MeshRenderer {
-        get {
-            if (meshRenderer == null) {
+    private MeshRenderer MeshRenderer
+    {
+        get
+        {
+            if (meshRenderer == null)
+            {
                 meshRenderer = GetComponentInChildren<MeshRenderer>();
                 UnityEngine.Assertions.Assert.IsNotNull(meshRenderer);
             }
@@ -84,9 +97,12 @@ public class Tile : MonoBehaviour {
         }
     }
 
-    private Rigidbody Rigidbody {
-        get {
-            if (rb == null) {
+    private Rigidbody Rigidbody
+    {
+        get
+        {
+            if (rb == null)
+            {
                 rb = GetComponentInChildren<Rigidbody>();
                 UnityEngine.Assertions.Assert.IsNotNull(rb);
             }
@@ -94,16 +110,20 @@ public class Tile : MonoBehaviour {
         }
     }
 
-    public void SetEmissive(bool enable) {
-        if (gameObject.activeSelf) {
+    public void SetEmissive(bool enable)
+    {
+        if (gameObject.activeSelf)
+        {
             StartCoroutine(LerpEmissive(data.lerpToEmissiveDuration, enable ? data.emissiveIntensity : 0.0f));
         }
     }
 
     private readonly int emissionColorID = Shader.PropertyToID("_EmissionColor");
 
-    public float EmissionIntensity {
-        set {
+    public float EmissionIntensity
+    {
+        set
+        {
             Material.SetColor(emissionColorID, data.emissionColor * value);
         }
     }
@@ -112,10 +132,12 @@ public class Tile : MonoBehaviour {
 
     public bool Popped { get => popped; }
 
-    private void InstantiateTilePrefab() {
+    private void InstantiateTilePrefab()
+    {
 
         GameObject prefab = null;
-        switch (type) {
+        switch (type)
+        {
             case TileType.Cube:
                 prefab = cubePrefab;
                 break;
@@ -135,7 +157,8 @@ public class Tile : MonoBehaviour {
         tileGO = Instantiate(prefab, transform);
     }
 
-    public void ResetTile() {
+    public void ResetTile()
+    {
 
         // Reactivate
         gameObject.SetActive(true);
@@ -158,27 +181,34 @@ public class Tile : MonoBehaviour {
         StartCoroutine(LerpToPositionAndRotation(initPos, initRot, data.resetDuration));
     }
 
-    private void Update() {
-        if (Exploded()) {
+    private void Update()
+    {
+        if (Exploded())
+        {
             // We don't want to the tile to fly too far away so lock if it has travelled by enough distance.
-            if (Vector3.Distance(transform.localPosition, initPos) > data.maxExplodeDistance) {
+            if (Vector3.Distance(transform.localPosition, initPos) > data.maxExplodeDistance)
+            {
                 Rigidbody.isKinematic = true;
                 MeshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
     }
 
-    private bool Exploded() {
+    private bool Exploded()
+    {
         return popped && Rigidbody.isKinematic == false;
     }
 
-    public void Pop() {
+    public void Pop()
+    {
         popped = true;
 
-        if (data.explodeOnPop) {
+        if (data.explodeOnPop)
+        {
             Explode(explosionLocator);
         }
-        else {
+        else
+        {
             gameObject.SetActive(false);
         }
 
@@ -187,33 +217,39 @@ public class Tile : MonoBehaviour {
         top?.MoveDown(this);
     }
 
-    private IEnumerator LerpEmissive(float duration, float targetValue) {
+    private IEnumerator LerpEmissive(float duration, float targetValue)
+    {
         float time = 0;
         float start = targetValue == data.emissiveIntensity ? data.emissiveIntensity : 0.0f;
 
-        while (time < duration) {
+        while (time < duration)
+        {
             EmissionIntensity = Mathf.Lerp(start, targetValue, time / duration);
             time += Time.deltaTime;
             yield return null;
         }
     }
 
-    private IEnumerator PingPongEmissive(float duration, float targetValue) {
+    private IEnumerator PingPongEmissive(float duration, float targetValue)
+    {
         float time = 0;
 
-        while (time < duration) {
+        while (time < duration)
+        {
             EmissionIntensity = Mathf.PingPong(time, targetValue);
             time += Time.deltaTime;
             yield return null;
         }
     }
 
-    public void Explode(Transform transform) {
+    public void Explode(Transform transform)
+    {
         Rigidbody.isKinematic = false;
         Rigidbody.AddExplosionForce(data.explosionForce, transform.position, data.explosionRadius);
     }
 
-    public void MoveDown(Tile formerTile) {
+    public void MoveDown(Tile formerTile)
+    {
         // Move along any further top tiles
         top?.MoveDown(this);
 
@@ -225,40 +261,51 @@ public class Tile : MonoBehaviour {
         StartCoroutine(LerpToPositionAndRotation(positionToMoveTo, initRot, moveDuration));
     }
 
-    private int CalcRowIndex() {
+    private int CalcRowIndex()
+    {
         int newRow = 0;
         Tile tile = bottom;
-        while (tile != null) {
+        while (tile != null)
+        {
             tile = tile.bottom;
             newRow++;
         }
         return newRow;
     }
 
-    private void UpdatePoppedVicinity() {
-        if (bottom != null) {
+    private void UpdatePoppedVicinity()
+    {
+        if (bottom != null)
+        {
             bottom.top = top;
         }
-        if (top != null) {
+        if (top != null)
+        {
             top.bottom = bottom;
         }
-        if (left != null) {
+        if (left != null)
+        {
             left.right = top;
         }
-        if (right != null) {
+        if (right != null)
+        {
             right.left = top;
         }
     }
 
-    private void UpdateTraversedVicinity(Tile formerTile) {
+    private void UpdateTraversedVicinity(Tile formerTile)
+    {
 
         // If there is no top tile we make sure to clear former row neighbours.
-        if (this.top == null) {
+        if (this.top == null)
+        {
 
-            if (this.left != null) {
+            if (this.left != null)
+            {
                 this.left.right = null;
             }
-            if (this.right != null) {
+            if (this.right != null)
+            {
                 this.right.left = null;
             }
         }
@@ -267,43 +314,54 @@ public class Tile : MonoBehaviour {
         this.left = formerTile.left;
         this.right = formerTile.right;
 
-        if (this.left != null) {
+        if (this.left != null)
+        {
             this.left.right = formerTile.top;
         }
-        if (this.right != null) {
+        if (this.right != null)
+        {
             this.right.left = formerTile.top;
         }
     }
 
-    public void CheckForRowMatches() {
+    public void CheckForRowMatches()
+    {
         // Check for row matches.
         // Legend:
         // <X> = this tile
         // |x| = neighbouring tiles
-        if (left != null && left.type == type) { // |x|<X>
-            if (left.left != null && left.left.type == type) { // |x|x|<X>
+        if (left != null && left.type == type)
+        { // |x|<X>
+            if (left.left != null && left.left.type == type)
+            { // |x|x|<X>
                 matching = true;
             }
-            if (right != null && right.type == type) { // |x|<X>|x|
+            if (right != null && right.type == type)
+            { // |x|<X>|x|
                 matching = true;
             }
         }
-        if (right != null && this.right.type == type) {// <X>|x|
-            if (right.right != null && right.right.type == type) { //<X>|x|x|
+        if (right != null && this.right.type == type)
+        {// <X>|x|
+            if (right.right != null && right.right.type == type)
+            { //<X>|x|x|
                 matching = true;
             }
-            if (left != null && left.type == type) { //|x|<X>|x|
+            if (left != null && left.type == type)
+            { //|x|<X>|x|
                 matching = true;
             }
         }
     }
 
-    private IEnumerator LerpToPositionAndRotation(Vector3 targetPosition, Quaternion targetRotation, float duration) {
+    private IEnumerator LerpToPositionAndRotation(Vector3 targetPosition, Quaternion targetRotation, float duration)
+    {
         float time = 0;
         Vector3 startPosition = transform.localPosition;
         Quaternion startRotation = transform.localRotation;
 
-        while (time < duration) {
+        while (time < duration)
+        {
             transform.localPosition = Vector3.Lerp(startPosition, targetPosition, time / duration);
             transform.localRotation = Quaternion.Lerp(startRotation, targetRotation, time / duration);
             time += Time.deltaTime;
@@ -312,10 +370,12 @@ public class Tile : MonoBehaviour {
         transform.localPosition = targetPosition;
     }
 
-    public List<Tile> GetTopTiles() {
+    public List<Tile> GetTopTiles()
+    {
         var topTiles = new List<Tile>();
         Tile tile = top;
-        while (tile != null) {
+        while (tile != null)
+        {
             topTiles.Add(tile);
             tile = tile.top;
         }
@@ -323,7 +383,8 @@ public class Tile : MonoBehaviour {
     }
 
     #region Draw gizmos
-    void OnDrawGizmosSelected() {
+    void OnDrawGizmosSelected()
+    {
 
         DrawTileGizmo(left, Color.green);
         DrawTileGizmo(right, Color.red);
@@ -331,17 +392,23 @@ public class Tile : MonoBehaviour {
         DrawTileGizmo(bottom, Color.cyan);
     }
 
-    private void OnDrawGizmos() {
-        if (Matching) {
+    private void OnDrawGizmos()
+    {
+        if (Matching)
+        {
             DrawTileGizmo(this, Color.black, -0.35f, -0.5f, 0.25f);
         }
     }
 
-    private void DrawTileGizmo(Tile tile, Color color, float yOffset = 0.0f, float zOffset = -1.0f, float radius = 0.1f) {
+    private void DrawTileGizmo(Tile tile, Color color, float yOffset = 0.0f, float zOffset = -1.0f, float radius = 0.1f)
+    {
         Gizmos.color = color;
-        if (tile != null) {
+        if (tile != null)
+        {
             Gizmos.DrawSphere(tile.transform.position + new Vector3(0.0f, yOffset, zOffset), radius);
-        } else {
+        }
+        else
+        {
             // TODO draw null?
         }
     }

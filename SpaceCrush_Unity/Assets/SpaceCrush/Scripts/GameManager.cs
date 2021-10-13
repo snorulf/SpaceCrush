@@ -1,8 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour {
-
+public class GameManager : MonoBehaviour
+{
     [SerializeField, Range(3, 100)] private int columns = 10, rows = 10;
     [SerializeField, Range(0.0f, 10.0f)] private float popMatchesWaitTime = 1.0f;
 
@@ -18,7 +18,8 @@ public class GameManager : MonoBehaviour {
 
     WaitForSeconds popMatchesWait;
 
-    void Start() {
+    void Start()
+    {
         grid = GetComponentInChildren<TileGrid>();
         UnityEngine.Assertions.Assert.IsNotNull(grid);
         grid.PopulateGrid(columns, rows);
@@ -29,24 +30,30 @@ public class GameManager : MonoBehaviour {
         popMatchesWait = new WaitForSeconds(popMatchesWaitTime);
     }
 
-    public void ResetGame() {
-        if (PlayersTurn()) {
+    public void ResetGame()
+    {
+        if (PlayersTurn())
+        {
             grid.ResetTiles();
 
         }
     }
 
-    private bool Idle() {
+    private bool Idle()
+    {
         return Time.time - lastIdleTime > IdleTimeSetting;
     }
 
-    private void Update() {
-        if (playing && Idle() && !handlingturn) {
+    private void Update()
+    {
+        if (playing && Idle() && !handlingturn)
+        {
             grid.ResetTiles();
             playing = false;
         }
 
-        if (Input.touchCount > 0) { // Touch input
+        if (Input.touchCount > 0)
+        { // Touch input
 
             lastIdleTime = Time.time;
             playing = true;
@@ -55,24 +62,29 @@ public class GameManager : MonoBehaviour {
         }
 
 #if UNITY_EDITOR
-        if (Input.GetMouseButtonDown(0)) { // left button
-            
+        if (Input.GetMouseButtonDown(0))
+        { // left button
+
             lastIdleTime = Time.time;
             playing = true;
 
             HandleClick(); ;
         }
 
-        if (Input.GetKeyDown(KeyCode.R)) {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
             ResetGame();
         }
 #endif
     }
 
-    private void HandleTouch() {
-        if (PlayersTurn()) {
+    private void HandleTouch()
+    {
+        if (PlayersTurn())
+        {
             var touch = Input.GetTouch(0);
-            if (touch.phase != TouchPhase.Began) {
+            if (touch.phase != TouchPhase.Began)
+            {
                 return;
             }
 
@@ -80,44 +92,56 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void HandleClick() {
-        if (PlayersTurn()) {
+    private void HandleClick()
+    {
+        if (PlayersTurn())
+        {
             PopTileAtPosition(Input.mousePosition);
         }
     }
 
-    private bool PlayersTurn() {
+    private bool PlayersTurn()
+    {
         return !handlingturn;
     }
 
-    private void PopTileAtPosition(Vector3 pos) {
+    private void PopTileAtPosition(Vector3 pos)
+    {
         // Construct a ray from pos
         Ray ray = mainCamera.ScreenPointToRay(pos);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit)) {
-            if (hit.transform.TryGetComponent(out Tile tile)) {
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.transform.TryGetComponent(out Tile tile))
+            {
                 //Debug.Log("Clicked: " + tile.transform.name, tile.gameObject);
 
-                if (tile.Popped) { // Popped tiles can still be pushed
+                if (tile.Popped)
+                { // Popped tiles can still be pushed
                     tile.Explode(hit.transform);
-                } else {
+                }
+                else
+                {
                     HandlePlayerTurn(tile);
                 }
             }
         }
     }
 
-    private void HandlePlayerTurn(Tile tile) {
+    private void HandlePlayerTurn(Tile tile)
+    {
         handlingturn = true; // flag
         var turnResult = grid.PopTile(tile);
         StartCoroutine(PopMatches(turnResult));
     }
 
-    private IEnumerator PopMatches(TileGrid.TurnResult turnResult) {
+    private IEnumerator PopMatches(TileGrid.TurnResult turnResult)
+    {
 
         yield return new WaitForSeconds(turnResult.turnDuration);
 
-        while (turnResult.matches.Count >= 3) {
+        while (turnResult.matches.Count >= 3)
+        {
 
             grid.SetEmissive(turnResult.matches, true);
 

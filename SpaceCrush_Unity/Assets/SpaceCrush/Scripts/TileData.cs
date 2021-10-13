@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "TileData", menuName = "RG/TileData", order = 1)]
-public class TileData : ScriptableObject {
+public class TileData : ScriptableObject
+{
     [Header("Explode")]
     public bool explodeOnPop = false;
     public float explosionForce = 200.0f;
