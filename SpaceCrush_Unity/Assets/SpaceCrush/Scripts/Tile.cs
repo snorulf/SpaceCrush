@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -312,34 +313,50 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public void CheckForRowMatches()
+    public bool MatchType(Tile other)
     {
+        return other != null && !other.popped && other.Type == this.Type;
+    }
+
+    public bool CheckRowMatches()
+    {
+        UnityEngine.Assertions.Assert.IsFalse(popped, "Popped tiles cannot have matches");
+
         // Check for row matches.
         // Legend:
         // <X> = this tile
         // |x| = neighbouring tiles
-        if (left != null && left.type == type)
+        if (MatchType(left))
         { // |x|<X>
-            if (left.left != null && left.left.type == type)
+            if (MatchType(left.left))
             { // |x|x|<X>
                 matching = true;
+                left.matching = true;
+                left.left.matching = true;
             }
-            if (right != null && right.type == type)
+            if (MatchType(right))
             { // |x|<X>|x|
                 matching = true;
+                left.matching = true;
+                right.matching = true;
             }
         }
-        if (right != null && right.type == type)
+        if (MatchType(right))
         {// <X>|x|
-            if (right.right != null && right.right.type == type)
+            if (MatchType(right.right))
             { //<X>|x|x|
                 matching = true;
+                right.matching = true;
+                right.right.matching = true;
             }
-            if (left != null && left.type == type)
+            if (MatchType(left))
             { //|x|<X>|x|
                 matching = true;
+                right.matching = true;
+                left.matching = true;
             }
         }
+        return matching;
     }
 
     private IEnumerator LerpToPositionAndRotation(Vector3 targetPosition, Quaternion targetRotation, float duration)
@@ -360,14 +377,14 @@ public class Tile : MonoBehaviour
 
     public List<Tile> GetTopTiles()
     {
-        var topTiles = new List<Tile>();
+        var topTiles = new HashSet<Tile>();
         Tile tile = top;
-        while (tile != null)
+        while (tile != null && !tile.popped)
         {
             topTiles.Add(tile);
             tile = tile.top;
         }
-        return topTiles;
+        return topTiles.ToList();
     }
 
     #region Draw gizmos

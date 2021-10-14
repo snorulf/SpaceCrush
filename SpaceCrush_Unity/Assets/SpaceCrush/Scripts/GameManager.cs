@@ -142,12 +142,10 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator PopMatches(TileGrid.TurnResult turnResult)
     {
-
-        yield return new WaitForSeconds(turnResult.turnDuration);
+        yield return new WaitForSeconds(turnResult.duration);
 
         while (turnResult.matches.Count >= 3)
         {
-
             grid.SetEmissive(turnResult.matches, true);
 
             yield return popMatchesWait;
@@ -158,7 +156,7 @@ public class GameManager : MonoBehaviour
 
             turnResult = result;
 
-            yield return new WaitForSeconds(result.turnDuration);
+            yield return new WaitForSeconds(turnResult.duration);
 
             lastIdleTime = Time.time; // Update this here since the popping-sequence should not count as idle-time.
         }

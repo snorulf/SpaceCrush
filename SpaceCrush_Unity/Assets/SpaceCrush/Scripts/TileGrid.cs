@@ -6,40 +6,52 @@ using UnityEngine;
 public class TileGrid : MonoBehaviour
 {
 
-    private Tile[,] tiles;
+    private Tile[,] allTiles;
     [SerializeField] private GameObject tileBasePrefab;
 
-    private List<Tile> GetMatches()
+    private List<Tile> CheckMatches(List<Tile> movedTiles)
     {
-        // FIXME: Fix brute force check.
-        List<Tile> matches = new List<Tile>();
-        for (int column = 0; column < tiles.GetLength(0); column++)
+        var matches = new HashSet<Tile>();
+        for (int i = 0; i < movedTiles.Count; i++)
         {
-            for (int row = 0; row < tiles.GetLength(1); row++)
+            var tile = movedTiles[i];
+            if (tile.Popped)
             {
-                var tile = tiles[column, row];
-                if (tile.Popped)
+                continue;
+            }
+
+            if (tile.CheckRowMatches())
+            {
+                matches.Add(tile);
+
+                var leftTile = tile.left;
+                while (tile.MatchType(leftTile))
                 {
-                    continue;
+                    matches.Add(leftTile);
+                    leftTile = leftTile.left;
                 }
-                tile.CheckForRowMatches();
-                if (tile.Matching)
+
+                var rightTile = tile.right;
+                while (tile.MatchType(rightTile))
                 {
-                    matches.Add(tile);
+                    matches.Add(rightTile);
+                    rightTile = rightTile.right;
                 }
             }
         }
+
+        UnityEngine.Assertions.Assert.IsFalse(matches.Any(x => x.Popped == true), "A match has already been popped so something is not right here.");
         UnityEngine.Assertions.Assert.IsTrue(matches.Count == 0 || matches.Count >= 3, "Invalid number of matches!");
-        return matches;
+        return matches.ToList();
     }
 
     public void ResetTiles()
     {
-        for (int column = 0; column < tiles.GetLength(0); column++)
+        for (int column = 0; column < allTiles.GetLength(0); column++)
         {
-            for (int row = 0; row < tiles.GetLength(1); row++)
+            for (int row = 0; row < allTiles.GetLength(1); row++)
             {
-                var tile = tiles[column, row];
+                var tile = allTiles[column, row];
                 tile.ResetTile();
             }
         }
@@ -48,7 +60,7 @@ public class TileGrid : MonoBehaviour
 
     public void PopulateGrid(int columns, int rows)
     {
-        tiles = new Tile[columns, rows];
+        allTiles = new Tile[columns, rows];
 
         //FIXME: Seperate linking of tiles and tile type creation
 
@@ -67,7 +79,7 @@ public class TileGrid : MonoBehaviour
 
                 Tile tile = tileGO.GetComponent<Tile>();
 
-                tiles[column, row] = tile;
+                allTiles[column, row] = tile;
 
                 tile.columnIndex = column;
 
@@ -81,8 +93,8 @@ public class TileGrid : MonoBehaviour
 
                 if (row != 0)
                 {
-                    tiles[column, row - 1].top = tile;
-                    tile.bottom = tiles[column, row - 1];
+                    allTiles[column, row - 1].top = tile;
+                    tile.bottom = allTiles[column, row - 1];
                 }
 
                 // Randomize a tile type and make sure it is not 3-row match
@@ -102,13 +114,13 @@ public class TileGrid : MonoBehaviour
 
     private void LinkTiles()
     {
-        for (int row = 0; row < tiles.GetLength(1); row++)
+        for (int row = 0; row < allTiles.GetLength(1); row++)
         {
             Tile leftNeighbour = null;
-            for (int column = 0; column < tiles.GetLength(0); column++)
+            for (int column = 0; column < allTiles.GetLength(0); column++)
             {
 
-                Tile tile = tiles[column, row];
+                Tile tile = allTiles[column, row];
 
                 // Link up with the neigbours
                 tile.left = leftNeighbour;
@@ -120,8 +132,8 @@ public class TileGrid : MonoBehaviour
 
                 if (row != 0)
                 {
-                    tiles[column, row - 1].top = tile;
-                    tile.bottom = tiles[column, row - 1];
+                    allTiles[column, row - 1].top = tile;
+                    tile.bottom = allTiles[column, row - 1];
                 }
             }
         }
@@ -150,12 +162,12 @@ public class TileGrid : MonoBehaviour
     public struct TurnResult
     {
         public readonly List<Tile> matches;
-        public readonly float turnDuration;
+        public readonly float duration;
 
-        public TurnResult(List<Tile> matches, float secondsToComplete)
+        public TurnResult(List<Tile> matches, float duration)
         {
             this.matches = matches;
-            this.turnDuration = secondsToComplete;
+            this.duration = duration;
         }
     }
 
@@ -167,22 +179,19 @@ public class TileGrid : MonoBehaviour
     public TurnResult PopTiles(List<Tile> tiles)
     {
         Debug.Log("<color=cyan>PopTiles: pop " + tiles.Count + " tiles</color>");
-
+        var movedTiles = new List<Tile>();
         for (int i = 0; i < tiles.Count; i++)
         {
             tiles[i].Pop();
+            // Get top tiles the popped tile, i.e the once that actually moved.
+            movedTiles.AddRange(tiles[i].GetTopTiles());
         }
 
-        // Get top tiles of popped tiles, i.e the once that actually moved and get max duration from that collection.
-        var topTiles = new List<Tile>();
-        for (int i = 0; i < tiles.Count; i++)
-        {
-            topTiles.AddRange(tiles[i].GetTopTiles());
-        }
-        float maxDuration = topTiles.Count > 0 ? topTiles.Max(x => x.moveDuration) : 0.0f;
+        // Get max duration from the moved tiles.
+        float maxDuration = movedTiles.Count > 0 ? movedTiles.Max(x => x.moveDuration) : 0.0f;
 
-        return new TurnResult(GetMatches(), maxDuration);
+        Debug.Log("<color=orange>Moved tiles: " + movedTiles.Count + "</color>");
+
+        return new TurnResult(CheckMatches(movedTiles), maxDuration);
     }
-
-
 }
